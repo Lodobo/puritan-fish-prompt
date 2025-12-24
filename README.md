@@ -30,39 +30,32 @@ You need [Fish Shell](https://fishshell.com) and [Oh My Fish!](https://github.co
 `$ vim ~/.config/omf/themes/puritan/fish_prompt.fish`
 
 ```fish
-function _git_branch_name
-    echo (command git symbolic-ref HEAD 2> /dev/null | sed -e 's|^refs/heads/||')
-end
+# name: puritan
+# author: Lodobo
 
 function _is_git_dirty
     echo (command git status -s --ignore-submodules=dirty 2> /dev/null)
 end
 
 function fish_prompt
-    set -l last_status $status
     set -l cyan (set_color -o cyan)
     set -l magenta (set color -o magenta)
     set -l normal (set_color normal)
 
-    set -l cwd $cyan(basename (prompt_pwd))
-
-    if [ (_git_branch_name) ]
-        set -l git_branch (_git_branch_name)
-        set git_info "$normal ($magenta$git_branch$normal)"
-        if [ (_is_git_dirty) ]
-            set -l dirty "$normal ●"
-            set git_info "$git_info$dirty"
-        end
-    end
-
-    # terminate with a nice prompt char:
-    if [ (id -u) = 0 ]
+    if fish_is_root_user
         set indicator '#'
     else
         set indicator '$'
     end
+    set -l cwd $cyan(path basename $PWD)
 
-    echo -n -s $cyan $indicator $normal ' ' $cwd $git_info $normal ' '
+    if [ (_is_git_dirty) ]
+        set git_status "$normal ●"
+    end
+
+    set -g __fish_git_prompt_color magenta 
+    set -l git_prompt "$(fish_git_prompt)$git_status"
+    echo -n -s $cyan $indicator ' ' $cwd $git_prompt ' '
 end
 ```
 
